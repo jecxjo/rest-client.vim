@@ -1,0 +1,94 @@
+*rest-client.txt* For Vim version 8.0. Last change: 2024 Jun 03
+
+==============================================================================
+CONTENTS                                                       *rest-client*
+
+    0. Why                                           |rest-client-why|
+    1. Requirements                         |rest-client-requirements|
+    2. Usage                                       |rest-client-usage|
+    3. Commands                                 |rest-client-commands|
+    4. Examples                                 |rest-client-examples|
+    5. Acknowledgments                   |rest-client-acknowledgments|
+
+==============================================================================
+WHY                                                       *rest-client-why*
+
+Being one of the only vim users on my team, when the company I worked at said
+we could no longer use API clients that interacted with the cloud everyone
+switched to using VS Code's Rest Client for our team managed API testing
+utility. The format and configu
+
+==============================================================================
+REQUIREMENTS                                     *rest-client-requirements*
+
+All of the actual API calls are done by system calls, currently using `curl`.
+
+To use the JSON pretty print version of output `jq` is used.
+
+No special installs is needed, just have both binaries in your path.
+
+==============================================================================
+USAGE                                                 *rest-client-usage*
+
+The plugin is designed to read the current buffer and execute the API call
+under the cursor. Output is displayed in a new buffer and optionally cleaned
+up with `jq` if the output is JSON.
+
+Optionally a configuration file can be placed near the http file which allows
+for environment variables in the URL. They are injected using double curly
+braces `{{VAR_NAME}}`.
+
+The http file is a simple format giving the method and URL along with optional
+header values and request data. See [rest-client-examples].
+
+==============================================================================
+COMMANDS                                           *rest-client-commands*
+
+There are two commands supplied:
+
+  `:RestClientConfig` - Opens the configuration file and dumps all
+                      environments and the variables under them.
+
+  `:RestClient [environment]` - Runs the API and opens a new buffer with
+                              results.
+
+  `:RestClientJSON [environment]` - Same command but cleans up output as JSON
+
+==============================================================================
+EXAMPLES                                          *rest-client-examples*
+
+The following is an example of a http API file.
+
+```http
+# Example API file
+
+###
+# An example of GET
+GET https://ex.co/api/search?foo=1234
+
+###
+# An example with Header fields
+# Multiple lines of comments
+GET https://ex.co/api/search?foo=1234
+Authorization: Basic deadbeef
+
+###
+# A POST example
+POST https://ex.co/api/hello
+Content-Type: application/json
+
+{
+    "name": "World"
+}
+```
+
+
+==============================================================================
+ACKNOWLEDGMENTS                            *rest-client-acknowledgments*
+
+This plugin was inspired by the Rest Client extension for VS Code.
+
+https://github.com/Huachao/vscode-restclient
+
+==============================================================================
+vim:tw=78:ts=8:noet:ft=help:norl:
