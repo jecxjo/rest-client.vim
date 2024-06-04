@@ -33,7 +33,8 @@ USAGE                                                 *rest-client-usage*
 
 The plugin is designed to read the current buffer and execute the API call
 under the cursor. Output is displayed in a new buffer and optionally cleaned
-up with `jq` if the output is JSON.
+up with `jq` if the output is JSON. The output includes HTTP headers and
+response data.
 
 Optionally a configuration file can be placed near the http file which allows
 for environment variables in the URL. They are injected using double curly

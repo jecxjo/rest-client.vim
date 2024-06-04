@@ -36,6 +36,7 @@ Only dependencies are `curl` and `jq`.
 ## Current Features (compared to VSCode client)
 
 - [X] Send Requests with all methods
+- [X] Response Headers
 - [ ] Configurable response output
 - [X] JSON Parsing
 - [X] Variables in API (local)

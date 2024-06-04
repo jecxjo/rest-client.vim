@@ -145,16 +145,15 @@ function! s:HttpRun(is_json, env_name)
     let l:env_vars = extend(l:env_vars, l:local_vars)
     let l:env_vars = extend(l:env_vars, l:prompts)
 
-
     let l:res = s:ParseHttpRequest()
     let l:method = l:res['method']
     let l:path = s:ReplacePlaceholders(l:res['path'], l:env_vars)
     let l:headers = map(copy(l:res['headers']), {_, v -> s:ReplacePlaceholders(v, l:env_vars)})
     let l:body = s:ReplacePlaceholders(l:res['body'], l:env_vars)
 
-    let l:cmd = 'curl --http1.1 -s -X ' . l:method . ' "' . l:path . '"'
+    let l:cmd = 'curl --http1.1 -i -s -X ' . l:method . ' "' . l:path . '"'
     if l:res['protocol'] == 'HTTP/2'
-        let l:cmd = 'curl --http2 -s -X ' . l:method . ' "' . l:path . '"'
+        let l:cmd = 'curl --http2 -i -s -X ' . l:method . ' "' . l:path . '"'
     endif
     for l:header in l:headers
         let l:cmd .= ' -H "' . l:header . '"'
@@ -167,20 +166,19 @@ function! s:HttpRun(is_json, env_name)
         endif
     endif
 
-    if a:is_json
-        let l:cmd .= ' | jq .'
-    endif
-
     echo l:cmd
-    let l:output = system(l:cmd)
+    let l:output = system(l:cmd . " | tr -d '\r'")
     enew
     put =l:output
-    setlocal nomodifiable
-    setlocal buftype=nofile
 
     if a:is_json
+        normal G
+        .!jq .
         setlocal filetype=json
     endif
+
+    setlocal nomodifiable
+    setlocal buftype=nofile
 endfunction
 
 command! -nargs=? RestClient call s:HttpRun(0, <q-args>)
