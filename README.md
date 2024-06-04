@@ -33,6 +33,22 @@ nvim -u NONE -c "helptags rest-client.vim/doc" -c q
 Only dependencies are `curl` and `jq`.
 
 
+## Current Features (compared to VSCode client)
+
+- [X] Send Requests with all methods
+- [ ] Configurable response output
+- [X] JSON Parsing
+- [X] Variables in API (local)
+- [X] Config File Variables
+- [X] Prompts
+- [ ] API Specific config
+- [ ] Cookie support
+- [ ] Form support
+- [ ] Multi-part data support
+- [ ] Process variables / guid / dotenv / randomInt / timestamps
+- [ ] Curl specific settings
+- [ ] Certs support
+
 ## Usage
 
 Create a simple text file containing your API requests.

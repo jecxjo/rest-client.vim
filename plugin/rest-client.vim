@@ -1,3 +1,25 @@
+function! s:ScanForPrompts()
+    let l:prompts = {}
+    let l:start = search('###', 'bnW')
+    let l:end = search('###', 'nW')
+    if l:end == 0
+        let l:end = line('$')
+    endif
+    let l:lines = getline(l:start, l:end)
+    for l:line in l:lines
+        if l:line =~ '^# @'
+            let l:parts = split(substitute(l:line, '^# @', '', ''), ' ')
+            let l:settingName = l:parts[0]
+            if l:settingName == 'prompt' && len(l:parts) > 2
+                let l:varName = l:parts[1]
+                let l:question = join(l:parts[2:], ' ')
+                let l:prompts[l:varName] = input(l:question . ': ')
+            endif
+        endif
+    endfor
+    return l:prompts
+endfunction
+
 function! s:ExtractLocalVariables()
     let l:local_vars = {}
     let l:line_num = search('###', 'nW')
@@ -34,6 +56,9 @@ endfunction
 function! s:ReplacePlaceholders(text, env_vars)
     let l:text = a:text
     for [l:key, l:value] in items(a:env_vars)
+        if type(l:value) == type({})
+            let l:value = string(l:value)
+        endif
         let l:text = substitute(l:text, '{{' . l:key . '}}', l:value, 'g')
     endfor
     return l:text
@@ -113,10 +138,13 @@ endfunction
 
 function! s:HttpRun(is_json, env_name)
     let l:env_dict = s:LoadEnvFile()
-    let l:env_vars = get(l:env_dict, a:env_name, {})
+    let l:local_vars = s:ExtractLocalVariables()
+    let l:prompts = s:ScanForPrompts()
 
-    let l:local_vars = s:ExtractLocalVariables() " Correct function call
+    let l:env_vars = get(l:env_dict, a:env_name, {})
     let l:env_vars = extend(l:env_vars, l:local_vars)
+    let l:env_vars = extend(l:env_vars, l:prompts)
+
 
     let l:res = s:ParseHttpRequest()
     let l:method = l:res['method']

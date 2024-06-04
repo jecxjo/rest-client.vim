@@ -82,6 +82,28 @@ To use the variables in the API file simply wrap them in double curly braces.
 GET {{host}}/api
 ```
 
+Prompts can be useful when running an API with user data you'd like to vary.
+To add a promopt create a comment line in the API entry with the name and the
+text to prompt the user.
+
+```http
+###
+# @prompt username Enter a username
+GET http://fo.co/info?username={{username}}
+```
+
+They can also be used in the payload.
+
+```http
+###
+# @prompt username Enter a username
+POST http://fo.co/post-data
+
+{
+  "name": "{{username}}"
+}
+```
+
 ==============================================================================
 EXAMPLES                                          *rest-client-examples*
 
