@@ -106,6 +106,10 @@ function! s:HttpRun(is_json, env_name)
     put =l:output
     setlocal nomodifiable
     setlocal buftype=nofile
+
+    if a:is_json
+        setlocal filetype=json
+    endif
 endfunction
 
 command! -nargs=? RestClient call s:HttpRun(0, <q-args>)
