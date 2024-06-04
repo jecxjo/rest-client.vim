@@ -57,9 +57,9 @@ Content-Type: application/json
 
 Move your cursor to an API (between the `###` lines) and run `:RestClient`. If the output is JSON and you want it cleaned run `:RestClientJSON`.
 
-### Environment
+### Local and Environment Variables
 
-Currently the plugin only supports variables via the environment file `httt-client.env.json`. The format is as follows:
+The plugin supports variables via the environment file `http-client.env.json`. The format is as follows:
 
 ```json
 {
@@ -84,6 +84,14 @@ GET {{host}}/hello?name=World
 ```
 
 To pick the environment to use run `:RestClient <env>` or `RestClientJSON <env>`. To see what environments are available and what variables exist run `:RestClientEnv`.
+
+To use local variables start a line with `@` in or above the API block.
+
+```
+###
+@host = http://localhost:3000
+GET {{host}}/api
+```
 
 
 ### API File format

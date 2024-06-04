@@ -1,3 +1,25 @@
+function! s:ExtractLocalVariables()
+    let l:local_vars = {}
+    let l:line_num = search('###', 'nW')
+    if l:line_num == 0
+        let l:line_num = line('$')
+    else
+        let l:line_num -= 1
+    endif
+    while l:line_num > 0
+        let l:line = getline(l:line_num)
+        if l:line =~ '^@\w\+ = .\+'
+            let l:parts = split(l:line, ' = ')
+            let l:var_name = substitute(l:parts[0], '^@', '', '')
+            if has_key(l:local_vars, l:var_name) == 0
+                let l:local_vars[l:var_name] = l:parts[1]
+            endif
+        endif
+        let l:line_num -= 1
+    endwhile
+    return l:local_vars
+endfunction
+
 function! s:LoadEnvFile()
     let l:current_file_dir = expand('%:p:h')
     let l:env_file = findfile('http-client.env.json', l:current_file_dir . ';')
@@ -32,21 +54,40 @@ function! s:ParseHttpRequest()
     let l:lines = s:ExtractHttpRequest()
 
     let l:methods =  ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS', 'CONNECT', 'TRACE']
-    let l:method = split(l:lines[0], ' ')[0]
-    if index(l:methods, l:method) == -1
+    let l:method = ''
+    let l:path = ''
+    let l:protocol = 'HTTP/1.1'
+    let l:headers = []
+    let l:body = ''
+    let l:is_file = 0
+    let l:i = 0
+
+    " Find the line that starts with a method
+    while l:i < len(l:lines)
+        if l:lines[l:i] =~ '^\s*$'
+            let l:i += 1
+            continue
+        endif
+        let l:parts = split(l:lines[l:i], ' ')
+        if index(l:methods, l:parts[0]) != -1
+            let l:method = l:parts[0]
+            let l:path = l:parts[1]
+            if len(l:parts) > 2
+                let l:protocol = l:parts[2]
+            endif
+            let l:i += 1
+            break
+        endif
+        let l:i += 1
+    endwhile
+
+    " If no valid method found, return an error
+    if l:method == ''
         echo 'Invalid HTTP method'
         return
     endif
 
-    let l:path = split(l:lines[0], ' ')[1]
-
-    let l:protocol = 'HTTP/1.1'
-    if len(split(l:lines[0], ' ')) > 2
-        let l:protocol = split(l:lines[0], ' ')[2]
-    endif
-
-    let l:headers = []
-    let l:i = 1
+    " Continue with the rest of the function as before
     while l:i < len(l:lines) && l:lines[l:i] != ''
         call add(l:headers, l:lines[l:i])
         let l:i += 1
@@ -55,7 +96,6 @@ function! s:ParseHttpRequest()
     let l:body_lines = filter(l:lines[l:i:], 'v:val != ""')
     let l:body = join(l:body_lines, "\n")
 
-    let l:is_file = 0
     if l:body =~ '^<'
         let l:is_file = 1
         let l:body = substitute(l:body, '^<', '', '')
@@ -74,6 +114,9 @@ endfunction
 function! s:HttpRun(is_json, env_name)
     let l:env_dict = s:LoadEnvFile()
     let l:env_vars = get(l:env_dict, a:env_name, {})
+
+    let l:local_vars = s:ExtractLocalVariables() " Correct function call
+    let l:env_vars = extend(l:env_vars, l:local_vars)
 
     let l:res = s:ParseHttpRequest()
     let l:method = l:res['method']

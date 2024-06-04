@@ -3,12 +3,13 @@
 ==============================================================================
 CONTENTS                                                       *rest-client*
 
-    0. Why                                           |rest-client-why|
-    1. Requirements                         |rest-client-requirements|
-    2. Usage                                       |rest-client-usage|
-    3. Commands                                 |rest-client-commands|
-    4. Examples                                 |rest-client-examples|
-    5. Acknowledgments                   |rest-client-acknowledgments|
+    0. Why                                                |rest-client-why|
+    1. Requirements                              |rest-client-requirements|
+    2. Usage                                            |rest-client-usage|
+    3. Commands                                      |rest-client-commands|
+    4. API File Variables                       |rest-client-api-variables|
+    5. Examples                                      |rest-client-examples|
+    6. Acknowledgments                        |rest-client-acknowledgments|
 
 ==============================================================================
 WHY                                                       *rest-client-why*
@@ -53,6 +54,33 @@ There are two commands supplied:
                               results.
 
   `:RestClientJSON [environment]` - Same command but cleans up output as JSON
+
+==============================================================================
+API FILE VARIABLES                           *rest-client-api-variables*
+
+There are two ways to use variables in the API file.
+
+First local variable are possible by using the `@` symbol.
+
+`@host = http://fo.co/`
+
+The other way is to create a file `http-client.env.json` in the directory next
+to the API file. This file is a JSON file with the following format:
+
+```json
+{
+  "local": {
+    "host": "http://fo.co"
+  }
+}
+```
+
+To use the variables in the API file simply wrap them in double curly braces.
+
+```http
+###
+GET {{host}}/api
+```
 
 ==============================================================================
 EXAMPLES                                          *rest-client-examples*
