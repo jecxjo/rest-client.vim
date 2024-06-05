@@ -2,6 +2,10 @@ let s:last_run = {}
 
 function! s:ProcessAuthorizationHeader(headers)
     let l:headers_dict = {}
+    let l:auth_type = 'None'
+    let l:username = ''
+    let l:password = ''
+
     for l:header in a:headers
         let l:parts = split(l:header, ':')
         let l:key = trim(l:parts[0])
@@ -11,21 +15,35 @@ function! s:ProcessAuthorizationHeader(headers)
 
     if has_key(l:headers_dict, 'Authorization')
         let l:auth = l:headers_dict['Authorization']
+        unlet l:headers_dict['Authorization']
         if l:auth =~ '^Basic '
+            let l:auth_type = 'Basic'
             let l:credentials = split(substitute(l:auth, '^Basic ', '', ''), ' ')
             if len(l:credentials) == 2
                 let l:username = l:credentials[0]
                 let l:password = l:credentials[1]
-                let l:base64_credentials = system('echo -n ' . l:username . ':' . l:password . ' | base64')
-                let l:headers_dict['Authorization'] = 'Basic ' . trim(l:base64_credentials)
+            elseif len(l:credentials) == 1 && l:credentials[0] =~ ':'
+                let l:credentials = split(l:credentials[0], ':')
+                let l:username = l:credentials[0]
+                let l:password = l:credentials[1]
+            elseif len(l:credentials) == 1
+                let l:cred_string = system('echo -n ' . l:credentials[0] . ' | base64 -d')
+                let l:credentials = split(l:cred_string, ':')
+                let l:username = l:credentials[0]
+                let l:password = l:credentials[1]
+            endif
+        elseif l:auth =~ '^Digest '
+            let l:auth_type = 'Digest'
+            let l:credentials = split(substitute(l:auth, '^Digest ', '', ''), ' ')
+            if len(l:credentials) == 2
+                let l:username = l:credentials[0]
+                let l:password = l:credentials[1]
             else
-                if len(l:credentials) == 1 && l:credentials[0] =~ ':'
-                    let l:base64_credentials = system('echo -n ' . l:credentials[0] . ' | base64')
-                    let l:headers_dict['Authorization'] = 'Basic ' . trim(l:base64_credentials)
-                endif
+                echo 'Error: Invalid Digest Authorization header'
+                return {}
             endif
         else
-            echo 'Error: Only Basic mode is supported for Authorization header'
+            echo 'Error: Only Basic and Digest mode is supported for Authorization header'
             return {}
         endif
     endif
@@ -35,7 +53,7 @@ function! s:ProcessAuthorizationHeader(headers)
         call add(l:headers, l:key . ': ' . l:value)
     endfor
 
-    return l:headers
+    return [l:headers, l:auth_type, l:username, l:password]
 endfunction
 
 function! s:ScanForPrompts()
@@ -201,13 +219,23 @@ function! s:HttpRun(is_json, ...) abort
     let l:method = l:res['method']
     let l:path = s:ReplacePlaceholders(l:res['path'], l:env_vars)
     let l:headers = map(copy(l:res['headers']), {_, v -> s:ReplacePlaceholders(v, l:env_vars)})
-    let l:headers = s:ProcessAuthorizationHeader(l:headers)
+    let l:header_info = s:ProcessAuthorizationHeader(l:headers)
+    let l:headers = l:header_info[0]
+    let l:auth_type = l:header_info[1]
+    let l:username = l:header_info[2]
+    let l:password = l:header_info[3]
 
     let l:body = s:ReplacePlaceholders(l:res['body'], l:env_vars)
 
     let l:cmd = 'curl --http1.1 ' . l:show_headers . ' -s -X ' . l:method . ' "' . l:path . '"'
     if l:res['protocol'] == 'HTTP/2'
         let l:cmd = 'curl --http2 ' . l:show_headers . ' -s -X ' . l:method . ' "' . l:path . '"'
+    endif
+    if l:auth_type == 'Basic'
+        let l:cmd .= ' -u ' . l:username . ':' . l:password
+    endif
+    if l:auth_type == 'Digest'
+        let l:cmd .= ' --digest -u ' . l:username . ':' . l:password
     endif
     for l:header in l:headers
         let l:cmd .= ' -H "' . l:header . '"'

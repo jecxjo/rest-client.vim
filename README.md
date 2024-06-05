@@ -43,7 +43,7 @@ Only dependencies are `curl` and `jq`.
 - [X] Config File Variables
 - [X] Prompts
 - [X] Basic Auth
-- [ ] Digest Auth
+- [X] Digest Auth
 - [ ] API Specific config
 - [ ] Cookie support
 - [ ] Form support
