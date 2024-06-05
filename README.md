@@ -42,6 +42,8 @@ Only dependencies are `curl` and `jq`.
 - [X] Variables in API (local)
 - [X] Config File Variables
 - [X] Prompts
+- [X] Basic Auth
+- [ ] Digest Auth
 - [ ] API Specific config
 - [ ] Cookie support
 - [ ] Form support

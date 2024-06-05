@@ -1,5 +1,43 @@
 let s:last_run = {}
 
+function! s:ProcessAuthorizationHeader(headers)
+    let l:headers_dict = {}
+    for l:header in a:headers
+        let l:parts = split(l:header, ':')
+        let l:key = trim(l:parts[0])
+        let l:value = trim(join(l:parts[1:], ':'))
+        let l:headers_dict[l:key] = l:value
+    endfor
+
+    if has_key(l:headers_dict, 'Authorization')
+        let l:auth = l:headers_dict['Authorization']
+        if l:auth =~ '^Basic '
+            let l:credentials = split(substitute(l:auth, '^Basic ', '', ''), ' ')
+            if len(l:credentials) == 2
+                let l:username = l:credentials[0]
+                let l:password = l:credentials[1]
+                let l:base64_credentials = system('echo -n ' . l:username . ':' . l:password . ' | base64')
+                let l:headers_dict['Authorization'] = 'Basic ' . trim(l:base64_credentials)
+            else
+                if len(l:credentials) == 1 && l:credentials[0] =~ ':'
+                    let l:base64_credentials = system('echo -n ' . l:credentials[0] . ' | base64')
+                    let l:headers_dict['Authorization'] = 'Basic ' . trim(l:base64_credentials)
+                endif
+            endif
+        else
+            echo 'Error: Only Basic mode is supported for Authorization header'
+            return {}
+        endif
+    endif
+
+    let l:headers = []
+    for [l:key, l:value] in items(l:headers_dict)
+        call add(l:headers, l:key . ': ' . l:value)
+    endfor
+
+    return l:headers
+endfunction
+
 function! s:ScanForPrompts()
     let l:prompts = {}
     let l:start = search('###', 'bnW')
@@ -163,6 +201,8 @@ function! s:HttpRun(is_json, ...) abort
     let l:method = l:res['method']
     let l:path = s:ReplacePlaceholders(l:res['path'], l:env_vars)
     let l:headers = map(copy(l:res['headers']), {_, v -> s:ReplacePlaceholders(v, l:env_vars)})
+    let l:headers = s:ProcessAuthorizationHeader(l:headers)
+
     let l:body = s:ReplacePlaceholders(l:res['body'], l:env_vars)
 
     let l:cmd = 'curl --http1.1 ' . l:show_headers . ' -s -X ' . l:method . ' "' . l:path . '"'

@@ -8,8 +8,9 @@ CONTENTS                                                       *rest-client*
     2. Usage                                            |rest-client-usage|
     3. Commands                                      |rest-client-commands|
     4. API File Variables                       |rest-client-api-variables|
-    5. Examples                                      |rest-client-examples|
-    6. Acknowledgments                        |rest-client-acknowledgments|
+    5. Authorization                                     |rest-client-auth|
+    6. Examples                                      |rest-client-examples|
+    7. Acknowledgments                        |rest-client-acknowledgments|
 
 ==============================================================================
 WHY                                                       *rest-client-why*
@@ -111,6 +112,27 @@ POST http://fo.co/post-data
 {
   "name": "{{username}}"
 }
+```
+
+==============================================================================
+AUTHORIZATION                                          *rest-client-auth*
+
+Currently the only authorization method supported is basic auth. To use it add
+a header entry to the API. Three ways to do this are supported:
+
+```http
+GET http://fo.co/api
+Authorization: Basic dXNlcm5hbWU6cGFzc3dvcmQ=
+```
+
+```http
+GET http://fo.co/api
+Authorization: Basic username:password
+```
+
+```http
+GET http://fo.co/api
+Authorization: Basic username password
 ```
 
 ==============================================================================
