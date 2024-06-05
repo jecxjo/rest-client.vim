@@ -7,11 +7,12 @@ CONTENTS                                                       *rest-client*
     1. Requirements                              |rest-client-requirements|
     2. Usage                                            |rest-client-usage|
     3. Commands                                      |rest-client-commands|
-    4. API File Variables                       |rest-client-api-variables|
-    5. Authorization                                     |rest-client-auth|
-    6. Cookies                                        |rest-client-cookies|
-    7. Examples                                      |rest-client-examples|
-    8. Acknowledgments                        |rest-client-acknowledgments|
+    4. Configuration Variables        |rest-client-configuration-variables|
+    5. API File Variables                       |rest-client-api-variables|
+    6. Authorization                                     |rest-client-auth|
+    7. Cookies                                        |rest-client-cookies|
+    8. Examples                                      |rest-client-examples|
+    9. Acknowledgments                        |rest-client-acknowledgments|
 
 ==============================================================================
 WHY                                                       *rest-client-why*
@@ -66,6 +67,12 @@ There are two commands supplied:
 Currently supported flags:
 
   `-h`  - Disables headers in the output
+
+==============================================================================
+CONFIGURATION VARIABLES                  *rest-client-configuration-variables*
+
+`g:rest_client.cookie_file` - Location of the cookie file. Default is
+                            `cookie.txt` next to the API file opened.
 
 ==============================================================================
 API FILE VARIABLES                           *rest-client-api-variables*

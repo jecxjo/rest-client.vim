@@ -241,8 +241,11 @@ function! s:HttpRun(is_json, ...) abort
         let l:cmd .= ' -H "' . l:header . '"'
     endfor
 
-    " Cookie support
-    let l:cmd .= ' -c cookie.txt -b cookie.txt '
+    " Cookie support, default location is next to current file
+    if !exists("g:rest_client_cookie_file")
+        let g:rest_client_cookie_file = expand('%:p:h') . '/cookie.txt'
+    endif
+    let l:cmd .= ' -c ' . g:rest_client_cookie_file . ' -b ' . g:rest_client_cookie_file
 
     if l:body != ''
         if l:res['is_file']
