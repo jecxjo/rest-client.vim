@@ -1,3 +1,5 @@
+let s:last_run = {}
+
 function! s:ScanForPrompts()
     let l:prompts = {}
     let l:start = search('###', 'bnW')
@@ -136,12 +138,24 @@ function! s:ParseHttpRequest()
                 \ }
 endfunction
 
-function! s:HttpRun(is_json, env_name)
+function! s:HttpRun(is_json, ...) abort
+    let l:args = a:000
+    let l:env_name = ''
+    let l:show_headers = '-i'
+
+    for l:arg in l:args
+        if l:arg == '-h'
+            let l:show_headers = ''
+        else
+            let l:env_name = l:arg
+        endif
+    endfor
+
     let l:env_dict = s:LoadEnvFile()
     let l:local_vars = s:ExtractLocalVariables()
     let l:prompts = s:ScanForPrompts()
 
-    let l:env_vars = get(l:env_dict, a:env_name, {})
+    let l:env_vars = get(l:env_dict, l:env_name, {})
     let l:env_vars = extend(l:env_vars, l:local_vars)
     let l:env_vars = extend(l:env_vars, l:prompts)
 
@@ -151,9 +165,9 @@ function! s:HttpRun(is_json, env_name)
     let l:headers = map(copy(l:res['headers']), {_, v -> s:ReplacePlaceholders(v, l:env_vars)})
     let l:body = s:ReplacePlaceholders(l:res['body'], l:env_vars)
 
-    let l:cmd = 'curl --http1.1 -i -s -X ' . l:method . ' "' . l:path . '"'
+    let l:cmd = 'curl --http1.1 ' . l:show_headers . ' -s -X ' . l:method . ' "' . l:path . '"'
     if l:res['protocol'] == 'HTTP/2'
-        let l:cmd = 'curl --http2 -i -s -X ' . l:method . ' "' . l:path . '"'
+        let l:cmd = 'curl --http2 ' . l:show_headers . ' -s -X ' . l:method . ' "' . l:path . '"'
     endif
     for l:header in l:headers
         let l:cmd .= ' -H "' . l:header . '"'
@@ -166,6 +180,10 @@ function! s:HttpRun(is_json, env_name)
         endif
     endif
 
+    let s:last_run = {
+                \ 'cmd': l:cmd,
+                \ 'is_json': a:is_json
+                \ }
     echo l:cmd
     let l:output = system(l:cmd . " | tr -d '\r'")
     enew
@@ -181,8 +199,32 @@ function! s:HttpRun(is_json, env_name)
     setlocal buftype=nofile
 endfunction
 
-command! -nargs=? RestClient call s:HttpRun(0, <q-args>)
-command! -nargs=? RestClientJSON call s:HttpRun(1, <q-args>)
+function! s:HttpReRun()
+    if s:last_run == {}
+        echo 'No previous request to run'
+        return
+    endif
+    let l:cmd = s:last_run['cmd']
+    let l:is_json = s:last_run['is_json']
+
+    echo l:cmd
+    let l:output = system(l:cmd . " | tr -d '\r'")
+    enew
+    put =l:output
+
+    if l:is_json
+        normal G
+        .!jq .
+        setlocal filetype=json
+    endif
+
+    setlocal nomodifiable
+    setlocal buftype=nofile
+endfunction
+
+command! -nargs=* RestClient call s:HttpRun(0, <f-args>)
+command! -nargs=* RestClientJSON call s:HttpRun(1, <f-args>)
+command! -nargs=0 RestClientReRun call s:HttpReRun()
 
 function! s:ReadEnvironments()
     let l:env_dict = s:LoadEnvFile()

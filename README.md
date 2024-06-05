@@ -37,7 +37,7 @@ Only dependencies are `curl` and `jq`.
 
 - [X] Send Requests with all methods
 - [X] Response Headers
-- [ ] Configurable response output
+- [X] Configurable response output
 - [X] JSON Parsing
 - [X] Variables in API (local)
 - [X] Config File Variables
@@ -73,6 +73,8 @@ Content-Type: application/json
 ```
 
 Move your cursor to an API (between the `###` lines) and run `:RestClient`. If the output is JSON and you want it cleaned run `:RestClientJSON`.
+
+You can also rerun the last API call made with `:RestClientReRun`.
 
 ### Local and Environment Variables
 

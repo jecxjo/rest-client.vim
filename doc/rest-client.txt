@@ -51,10 +51,18 @@ There are two commands supplied:
   `:RestClientConfig` - Opens the configuration file and dumps all
                       environments and the variables under them.
 
-  `:RestClient [environment]` - Runs the API and opens a new buffer with
-                              results.
+  `:RestClient [<flags>] [environment]` - Runs the API and opens a new buffer
+                                        with results.
 
-  `:RestClientJSON [environment]` - Same command but cleans up output as JSON
+  `:RestClientJSON [<flags>] [environment]` - Same command but cleans up output
+                                            as JSON
+
+  `:RestClientReRun` - Reruns the last API call made with the last output
+                     style selected
+
+Currently supported flags:
+
+  `-h`  - Disables headers in the output
 
 ==============================================================================
 API FILE VARIABLES                           *rest-client-api-variables*
