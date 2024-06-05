@@ -266,7 +266,8 @@ function! s:HttpRun(is_json, ...) abort
 
     if a:is_json
         normal G
-        .!jq .
+        ?^$
+        .+1,$!jq .
         setlocal filetype=json
     endif
 
