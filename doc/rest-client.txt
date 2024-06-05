@@ -71,7 +71,7 @@ Currently supported flags:
 ==============================================================================
 CONFIGURATION VARIABLES                  *rest-client-configuration-variables*
 
-`g:rest_client.cookie_file` - Location of the cookie file. Default is
+`g:rest_client_cookie_file` - Location of the cookie file. Default is
                             `cookie.txt` next to the API file opened.
 
 ==============================================================================
