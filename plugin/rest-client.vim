@@ -240,6 +240,10 @@ function! s:HttpRun(is_json, ...) abort
     for l:header in l:headers
         let l:cmd .= ' -H "' . l:header . '"'
     endfor
+
+    " Cookie support
+    let l:cmd .= ' -c cookie.txt -b cookie.txt '
+
     if l:body != ''
         if l:res['is_file']
             let l:cmd .= " -d @" . l:body

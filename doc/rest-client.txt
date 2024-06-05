@@ -9,8 +9,9 @@ CONTENTS                                                       *rest-client*
     3. Commands                                      |rest-client-commands|
     4. API File Variables                       |rest-client-api-variables|
     5. Authorization                                     |rest-client-auth|
-    6. Examples                                      |rest-client-examples|
-    7. Acknowledgments                        |rest-client-acknowledgments|
+    6. Cookies                                        |rest-client-cookies|
+    7. Examples                                      |rest-client-examples|
+    8. Acknowledgments                        |rest-client-acknowledgments|
 
 ==============================================================================
 WHY                                                       *rest-client-why*
@@ -18,7 +19,8 @@ WHY                                                       *rest-client-why*
 Being one of the only vim users on my team, when the company I worked at said
 we could no longer use API clients that interacted with the cloud everyone
 switched to using VS Code's Rest Client for our team managed API testing
-utility. The format and configu
+utility. I wanted to be able to use the same API files rather than create my
+own so I created this plugin.
 
 ==============================================================================
 REQUIREMENTS                                     *rest-client-requirements*
@@ -143,6 +145,12 @@ Digest Auth supports one entry type:
 GET http://fo.co/api
 Authorization: Digest username password
 ```
+
+==============================================================================
+COOKIES                                          *rest-client-cookies*
+
+Cookies are supported automatically. A text file `cookies.txt` is created
+to store them and are automatically retrieved when issuing requests.
 
 ==============================================================================
 EXAMPLES                                          *rest-client-examples*
