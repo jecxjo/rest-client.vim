@@ -154,15 +154,25 @@ function! s:ParseHttpRequest()
         let l:parts = split(l:lines[l:i], ' ')
         if index(l:methods, l:parts[0]) != -1
             let l:method = l:parts[0]
-            let l:path = l:parts[1]
-            if len(l:parts) > 2
-                let l:protocol = l:parts[2]
-            endif
+            let l:path = join(l:parts[1:])
             let l:i += 1
             break
         endif
         let l:i += 1
     endwhile
+
+    " Append query parameters to path
+    while l:i < len(l:lines) && (l:lines[l:i] =~ '^\s*[?&]')
+        let l:path .= trim(l:lines[l:i])
+        let l:i += 1
+    endwhile
+
+    " Check if path has two parts (path and protocol)
+    let l:path_parts = split(l:path, ' ')
+    if len(l:path_parts) == 2
+        let l:path = l:path_parts[0]
+        let l:protocol = l:path_parts[1]
+    endif
 
     " If no valid method found, return an error
     if l:method == ''

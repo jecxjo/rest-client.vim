@@ -178,6 +178,12 @@ GET https://ex.co/api/search?foo=1234
 Authorization: Basic deadbeef
 
 ###
+# URL on multiple lines, only supporting query params
+GET https://ex.co/api/search
+    ?foo=1234
+    &bar=5678
+
+###
 # A POST example
 POST https://ex.co/api/hello
 Content-Type: application/json

@@ -14,7 +14,7 @@ syntax match httpComment "#.*$"
 syntax keyword httpMethod GET POST PUT DELETE PATCH HEAD OPTIONS CONNECT TRACE
 
 " URLs
-syntax match httpUrl "https\?:\/\/\S\+"
+syntax match httpUrl "\vhttps\?://(\S+|\s*[?&]\S+)+"
 
 " Headers
 syntax match httpHeader "^\s*\zs[^:]\+\ze:"
@@ -43,4 +43,3 @@ hi def link jsonComma Delimiter
 hi def link jsonColon Delimiter
 
 let b:current_syntax = "http"
-
