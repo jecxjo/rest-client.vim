@@ -127,8 +127,8 @@ POST http://fo.co/post-data
 ==============================================================================
 AUTHORIZATION                                          *rest-client-auth*
 
-Currently the only authorization methods supported are Basic and Digest. To
-use either simply add an `Authorization` header to the API File.
+Currently the only authorization methods with SPECIAL supported are Basic and
+Digest. To use either simply add an `Authorization` header to the API File.
 
 Basic Auth supports three entry types:
 
@@ -153,6 +153,9 @@ Digest Auth supports one entry type:
 GET http://fo.co/api
 Authorization: Digest username password
 ```
+
+For all other forms, like `Bearer` just create the `Authorization` header and
+it will be passed directly to `curl`.
 
 ==============================================================================
 COOKIES                                          *rest-client-cookies*

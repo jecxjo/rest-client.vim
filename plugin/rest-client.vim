@@ -15,8 +15,8 @@ function! s:ProcessAuthorizationHeader(headers)
 
     if has_key(l:headers_dict, 'Authorization')
         let l:auth = l:headers_dict['Authorization']
-        unlet l:headers_dict['Authorization']
         if l:auth =~ '^Basic '
+            unlet l:headers_dict['Authorization']
             let l:auth_type = 'Basic'
             let l:credentials = split(substitute(l:auth, '^Basic ', '', ''), ' ')
             if len(l:credentials) == 2
@@ -33,6 +33,7 @@ function! s:ProcessAuthorizationHeader(headers)
                 let l:password = l:credentials[1]
             endif
         elseif l:auth =~ '^Digest '
+            unlet l:headers_dict['Authorization']
             let l:auth_type = 'Digest'
             let l:credentials = split(substitute(l:auth, '^Digest ', '', ''), ' ')
             if len(l:credentials) == 2
@@ -42,9 +43,6 @@ function! s:ProcessAuthorizationHeader(headers)
                 echo 'Error: Invalid Digest Authorization header'
                 return {}
             endif
-        else
-            echo 'Error: Only Basic and Digest mode is supported for Authorization header'
-            return {}
         endif
     endif
 
