@@ -203,6 +203,21 @@ function! s:ParseHttpRequest()
                 \ }
 endfunction
 
+function! s:ParseUrlencodedBody(body)
+    let l:body = join(split(a:body, "\n"), "&")
+    let l:form_data = {}
+    let l:parts = split(l:body, '&')
+    for l:part in l:parts
+        let l:pair = split(l:part, '=')
+        if len(l:pair) == 2
+            let l:key = l:pair[0]
+            let l:value = l:pair[1]
+            let l:form_data[l:key] = l:value
+        endif
+    endfor
+    return l:form_data
+endfunction
+
 function! s:ParseMultipartBody(body, boundary)
     let l:parts = split(a:body, '\V' . '--' . a:boundary . '\(--\)\?', '')
     let l:multipart_data = []
@@ -292,6 +307,14 @@ function! s:HttpRun(is_json, ...) abort
         endif
     endfor
 
+    " Check if Content-Type is application/x-www-form-urlencoded
+    let l:is_urlencoded = 0
+    for l:header in l:headers
+        if l:header =~ 'Content-Type: application/x-www-form-urlencoded'
+            let l:is_urlencoded = 1
+            break
+        endif
+    endfor
 
     " curl command generation
     let l:cmd = 'curl --http1.1 ' . l:show_headers . ' -s -X ' . l:method . ' "' . l:path . '"'
@@ -324,6 +347,11 @@ function! s:HttpRun(is_json, ...) abort
             else
                 let l:cmd .= ' -F "' . l:part['name'] . '=' . l:part['content'] . '"'
             endif
+        endfor
+    elseif l:is_urlencoded
+        let l:form_data = s:ParseUrlencodedBody(l:body)
+        for [l:key, l:value] in items(l:form_data)
+            let l:cmd .= ' -d ' . l:key . '=' . l:value
         endfor
     else
         if l:body != ''

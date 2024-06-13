@@ -198,9 +198,11 @@ Content-Type: application/json
 FORM DATA                                        *rest-client-form-data*
 
 
-Form data is supported through the Content-Type header. Currently the method
-supported is `multipart/format-data`. Form fields as well as files can be
-sent.
+Form data is supported through the Content-Type header. Currently the methods
+supported are `multipart/format-data` and `application/x-www-form-urlencoded`.
+Form fields as well as files can be sent.
+
+Multipart Form Data:
 
 ```http
 ###
@@ -229,6 +231,20 @@ Content-Disposition: form-data; name="file"; filename="test.txt"
 < ./test.txt
 --foo--
 
+```
+
+Url Encoded:
+
+First line of body starts as a normal `key=value` and all subsequent lines
+must begin with an `&`.
+
+```http
+###
+POST http://localhost:3000/data
+Content-Type: application/x-www-form-urlencoded
+
+text1=this+is+text1&text2=this+is+text2
+&text3=also+text3
 ```
 
 ==============================================================================

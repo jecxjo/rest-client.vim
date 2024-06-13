@@ -46,8 +46,8 @@ Only dependencies are `curl` and `jq`.
 - [X] Digest Auth
 - [ ] API Specific config
 - [X] Cookie support (with configurable location)
-- [ ] Form support
-- [ ] Multi-part data support
+- [X] Form support
+- [X] Multi-part data support
 - [ ] Process variables / guid / dotenv / randomInt / timestamps
 - [ ] Curl specific settings
 - [ ] Certs support
