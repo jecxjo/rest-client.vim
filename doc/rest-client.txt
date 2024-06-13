@@ -1,4 +1,4 @@
-*rest-client.txt* For Vim version 8.0. Last change: 2024 Jun 03
+*rest-client.txt* For Vim version 8.0. Last change: 2024 Jun 12
 
 ==============================================================================
 CONTENTS                                                       *rest-client*
@@ -12,7 +12,8 @@ CONTENTS                                                       *rest-client*
     6. Authorization                                     |rest-client-auth|
     7. Cookies                                        |rest-client-cookies|
     8. Examples                                      |rest-client-examples|
-    9. Acknowledgments                        |rest-client-acknowledgments|
+    9. Form Data                                    |rest-client-form-data|
+   10. Acknowledgments                        |rest-client-acknowledgments|
 
 ==============================================================================
 WHY                                                       *rest-client-why*
@@ -193,6 +194,42 @@ Content-Type: application/json
 }
 ```
 
+==============================================================================
+FORM DATA                                        *rest-client-form-data*
+
+
+Form data is supported through the Content-Type header. Currently the method
+supported is `multipart/format-data`. Form fields as well as files can be
+sent.
+
+```http
+###
+# Sending form fields
+POST http://localhost:3000/input
+Content-Type: multipart/form-data; boundary=foo
+
+--foo
+Content-Disposition: form-data; name="text1"
+
+this is text1
+--foo
+Content-Disposition: form-data; name="text2"
+
+this is text2
+--foo--
+
+###
+# Sending a file
+POST http://localhost:3000/upload
+Content-Type: multipart/form-data; boundary=foo
+
+--foo
+Content-Disposition: form-data; name="file"; filename="test.txt"
+
+< ./test.txt
+--foo--
+
+```
 
 ==============================================================================
 ACKNOWLEDGMENTS                            *rest-client-acknowledgments*

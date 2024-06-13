@@ -186,8 +186,7 @@ function! s:ParseHttpRequest()
         let l:i += 1
     endwhile
 
-    let l:body_lines = filter(l:lines[l:i:], 'v:val != ""')
-    let l:body = join(l:body_lines, "\n")
+    let l:body = join(l:lines[l:i+1:], "\n")
 
     if l:body =~ '^<'
         let l:is_file = 1
@@ -202,6 +201,49 @@ function! s:ParseHttpRequest()
                 \ 'is_file': l:is_file,
                 \ 'protocol': l:protocol
                 \ }
+endfunction
+
+function! s:ParseMultipartBody(body, boundary)
+    let l:parts = split(a:body, '\V' . '--' . a:boundary . '\(--\)\?', '')
+    let l:multipart_data = []
+    for l:part in l:parts
+        let l:lines = split(l:part, "\n")
+        let l:found = 0
+        let l:headers = []
+        let l:content = ''
+        let l:is_file = 0
+        let l:filename = ''
+        let l:file_path = ''
+        let l:name = ''
+        for l:line in l:lines
+            if l:line =~ 'Content-Disposition: form-data;'
+                let l:headers = split(l:line, ';')
+                for l:header in l:headers
+                    if l:header =~ 'filename='
+                        let l:found = 1
+                        let l:is_file = 1
+                        let l:filename = matchstr(l:header, 'filename=".*"')
+                        let l:filename = substitute(l:filename, 'filename=', '', '')
+                        let l:filename = substitute(l:filename, '"', '', 'g')
+                    elseif l:header =~ 'name='
+                        let l:found = 1
+                        let l:name = matchstr(l:header, 'name=".*"')
+                        let l:name = substitute(l:name, 'name=', '', '')
+                        let l:name = substitute(l:name, '"', '', 'g')
+                    endif
+                endfor
+            elseif l:line =~ '^<'
+                let l:found = 1
+                let l:file_path = substitute(l:line, '^<', '', '')
+            else
+                let l:content .= l:line
+            endif
+        endfor
+        if l:found == 1
+            let l:multipart_data += [{'name': l:name, 'headers': l:headers, 'content': l:content, 'is_file': l:is_file, 'filename': l:filename, 'file_path': l:file_path}]
+        endif
+    endfor
+    return l:multipart_data
 endfunction
 
 function! s:HttpRun(is_json, ...) abort
@@ -237,6 +279,21 @@ function! s:HttpRun(is_json, ...) abort
 
     let l:body = s:ReplacePlaceholders(l:res['body'], l:env_vars)
 
+    " Check if Content-Type is multipart/form-data
+    let l:is_multipart = 0
+    let l:boundary = ''
+    for l:header in l:headers
+        if l:header =~ 'Content-Type: multipart/form-data;'
+            let l:is_multipart = 1
+            let l:boundary = matchstr(l:header, 'boundary=.*')
+            let l:boundary = substitute(l:boundary, 'boundary=', '', '')
+            let l:headers = filter(l:headers, {_, v -> v != l:header})
+            break
+        endif
+    endfor
+
+
+    " curl command generation
     let l:cmd = 'curl --http1.1 ' . l:show_headers . ' -s -X ' . l:method . ' "' . l:path . '"'
     if l:res['protocol'] == 'HTTP/2'
         let l:cmd = 'curl --http2 ' . l:show_headers . ' -s -X ' . l:method . ' "' . l:path . '"'
@@ -257,11 +314,24 @@ function! s:HttpRun(is_json, ...) abort
     endif
     let l:cmd .= ' -c ' . g:rest_client_cookie_file . ' -b ' . g:rest_client_cookie_file
 
-    if l:body != ''
-        if l:res['is_file']
-            let l:cmd .= " -d @" . l:body
-        else
-            let l:cmd .= " -d '" . l:body . "'"
+    " If it is, parse the body and modify the curl command
+    if l:is_multipart
+        let l:cmd .= ' -H "Content-Type: multipart/form-data" '
+        let l:multipart_data = s:ParseMultipartBody(l:body, l:boundary)
+        for l:part in l:multipart_data
+            if l:part['is_file']
+                let l:cmd .= ' -F "' . l:part['name'] . '=@' . l:part['file_path'] . '"'
+            else
+                let l:cmd .= ' -F "' . l:part['name'] . '=' . l:part['content'] . '"'
+            endif
+        endfor
+    else
+        if l:body != ''
+            if l:res['is_file']
+                let l:cmd .= " -d @" . l:body
+            else
+                let l:cmd .= " -d '" . l:body . "'"
+            endif
         endif
     endif
 
