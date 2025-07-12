@@ -1,6 +1,8 @@
 # rest-client.vim
 A vim port of the VSCode Rest Client.
 
+**NOTE** MOVING FROM GITHUB!!! This project is moving to: https://git.sh0.xyz/rest-client-vim.git/
+
 With a simple `*.http` or `*.rest` file in your project you can trigger API
 requests and view the responses directly in vim.
 
